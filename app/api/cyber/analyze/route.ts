@@ -31,6 +31,8 @@ export async function POST(req: Request) {
     {
       "classification": "Phishing" | "Malware" | "Social Engineering" | "Safe",
       "severity": "Low" | "Medium" | "High",
+      "confidenceScore": number, // 0-100 indicating how confident you are
+      "iocs": string[], // Indicators of compromise (e.g., specific sketchy URLs, sender mismatches, urgent keywords)
       "explanation": "string",
       "recommendations": "string"
     }`;
@@ -42,6 +44,8 @@ export async function POST(req: Request) {
       const result = {
         classification: mockClass,
         severity: mockClass === "Safe" ? "Low" : "High",
+        confidenceScore: mockClass === "Safe" ? 99 : 87,
+        iocs: mockClass === "Safe" ? [] : ["Suspicious wording", "Unknown sender"],
         explanation: "This is a mocked response because GEMINI_API_KEY is missing.",
         recommendations: "Please add GEMINI_API_KEY to .env to enable real analysis."
       };
@@ -50,9 +54,28 @@ export async function POST(req: Request) {
       return NextResponse.json(result);
     }
 
-    const aiResult = await model.generateContent(prompt);
-    const textResp = aiResult.response.text();
-    const result = JSON.parse(textResp);
+    let result;
+    try {
+      const aiResult = await model.generateContent(prompt);
+      const textResp = aiResult.response.text();
+      const cleanText = textResp.replace(/```json/gi, "").replace(/```/gi, "").trim();
+      result = JSON.parse(cleanText);
+    } catch (apiError: any) {
+      if (apiError.message?.includes("429") || apiError.message?.includes("503") || apiError.status === 429 || apiError.status === 503) {
+        console.warn("Gemini API rate limit or service unavailable. Falling back to mock response.");
+        const mockClass = content.toLowerCase().includes("http") ? "Phishing" : "Safe";
+        result = {
+          classification: mockClass,
+          severity: mockClass === "Safe" ? "Low" : "High",
+          confidenceScore: mockClass === "Safe" ? 99 : 87,
+          iocs: mockClass === "Safe" ? [] : ["Suspicious link or wording detected"],
+          explanation: "FALLBACK MODE: The AI rate limit was exceeded (429). This is a safe simulated response.",
+          recommendations: "Please try again later when the quota resets."
+        };
+      } else {
+        throw apiError; // rethrow other errors
+      }
+    }
 
     // Save to DB and increase score
     await logAnalysis(email, content, type, result.classification, result.severity, result.explanation, result.recommendations);
@@ -63,6 +86,6 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Analyze Error:", error);
-    return NextResponse.json({ error: "Failed to analyze the threat." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to analyze the threat. " + ((error as Error).message || "") }, { status: 500 });
   }
 }
