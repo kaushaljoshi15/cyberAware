@@ -36,6 +36,7 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
       const safe = initialHistory.filter(h => h.classification === 'Safe').length;
       const phishing = initialHistory.filter(h => h.classification === 'Phishing').length;
       const malware = initialHistory.filter(h => h.classification === 'Malware').length;
+      const socialEng = initialHistory.filter(h => h.classification === 'Social Engineering').length;
       
       pdf.text("Historical Threat Statistics:", 14, 50);
       pdf.setFontSize(11);
@@ -43,6 +44,7 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
       pdf.text(`• Safe Artifacts: ${safe}`, 14, 58);
       pdf.text(`• Phishing Attempts: ${phishing}`, 14, 64);
       pdf.text(`• Malware Vectors: ${malware}`, 14, 70);
+      pdf.text(`• Social Eng. Attempts: ${socialEng}`, 14, 76);
 
       // Generate Tabular System report
       const tableColumn = ["Date", "Classification", "Type", "Severity", "Artifact Preview"];
@@ -85,6 +87,7 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
   const data = [
     { name: 'Phishing', value: breakdown['Phishing'] || 0, color: '#ef4444' }, // red
     { name: 'Malware', value: breakdown['Malware'] || 0, color: '#eab308' },   // yellow
+    { name: 'Social Eng', value: breakdown['Social Engineering'] || 0, color: '#f97316' }, // orange
     { name: 'Safe', value: breakdown['Safe'] || 0, color: '#22c55e' },         // green
   ].filter(d => d.value > 0);
 
@@ -189,15 +192,24 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
                         {item.type}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${
                           item.classification === 'Safe' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 
-                          item.classification === 'Phishing' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                          item.classification === 'Phishing' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                          item.classification === 'Social Engineering' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
                           'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                         }`}>
                           {item.classification}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-neutral-300 capitalize">{item.severity}</td>
+                      <td className="px-6 py-4 capitalize">
+                        <span className={`font-bold ${
+                          item.severity === 'High' ? 'text-red-400' :
+                          item.severity === 'Medium' ? 'text-yellow-400' :
+                          'text-emerald-400'
+                        }`}>
+                          {item.severity}
+                        </span>
+                      </td>
                     </tr>
                   ))
                 )}

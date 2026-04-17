@@ -3,14 +3,15 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { logAnalysis, incrementAwarenessScore } from "@/lib/cyber-db";
 import { cookies } from "next/headers";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
 export async function POST(req: Request) {
   try {
     const { type, content } = await req.json();
     const cookieStore = await cookies();
     const email = cookieStore.get("userEmail")?.value;
     if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const apiKey = (process.env.GEMINI_API_KEY || "").replace(/^"+|"+$/g, '');
+    const genAI = new GoogleGenerativeAI(apiKey);
 
     // Setup Gemini Model Prompt
     // Requires JSON output.
@@ -61,16 +62,17 @@ export async function POST(req: Request) {
       const cleanText = textResp.replace(/```json/gi, "").replace(/```/gi, "").trim();
       result = JSON.parse(cleanText);
     } catch (apiError: any) {
-      if (apiError.message?.includes("429") || apiError.message?.includes("503") || apiError.status === 429 || apiError.status === 503) {
-        console.warn("Gemini API rate limit or service unavailable. Falling back to mock response.");
+      console.error(">>> API ERROR DEEP LOG:", apiError);
+      if (apiError.message?.includes("429") || apiError.message?.includes("503") || apiError.message?.includes("403") || apiError.message?.includes("404") || apiError.status === 429 || apiError.status === 503 || apiError.status === 403 || apiError.status === 404) {
+        console.warn("Gemini API access error (403, 429, 503). Falling back to mock response.", apiError.message);
         const mockClass = content.toLowerCase().includes("http") ? "Phishing" : "Safe";
         result = {
           classification: mockClass,
           severity: mockClass === "Safe" ? "Low" : "High",
           confidenceScore: mockClass === "Safe" ? 99 : 87,
           iocs: mockClass === "Safe" ? [] : ["Suspicious link or wording detected"],
-          explanation: "FALLBACK MODE: The AI rate limit was exceeded (429). This is a safe simulated response.",
-          recommendations: "Please try again later when the quota resets."
+          explanation: "FALLBACK MODE: The AI model access was denied or rate-limited. This is a safe simulated response.",
+          recommendations: "Please try again later or check your Gemini API key access."
         };
       } else {
         throw apiError; // rethrow other errors
