@@ -24,6 +24,70 @@ export default function SimulationPage() {
       content: "Hi Team,\n\nPlease find attached the invoice for the Q3 software licenses. Let me know if you have any questions.\n\nBest,\nFinance Dept",
       isPhishing: false,
       explanation: "No suspicious links, expected domain behavior, and no artificial urgency or threatening language."
+    },
+    {
+      id: "SCENARIO_3",
+      title: "IT Support - Action Required",
+      sender: "it-support@yourc0mpany-portal.com",
+      content: "Hello, we are updating the corporate VPN servers tonight. Please log in to the new portal to ensure your credentials are functioning post-migration.\n\n[http://yourc0mpany-portal.com/vpn-auth]",
+      isPhishing: true,
+      explanation: "The domain uses a zero instead of an 'o' in the domain name (yourc0mpany), a classic typosquatting technique."
+    },
+    {
+      id: "SCENARIO_4",
+      title: "New Annual Leave Policy FY27",
+      sender: "hr@yourcompany.com",
+      content: "Hi Everyone,\n\nPlease review the attached document outlining the changes to our PTO rollover policy effective next month. No immediate action is required.\n\nRegards,\nHuman Resources",
+      isPhishing: false,
+      explanation: "Standard internal communication. No urgent call to action, domain is correct, and it is purely informational."
+    },
+    {
+      id: "SCENARIO_5",
+      title: "Failed Delivery Attempt: Package #948210",
+      sender: "no-reply@post-tracking-alerts.net",
+      content: "Your package could not be delivered due to an unpaid customs fee of $2.99. Click here to pay the fee and reschedule delivery immediately.\n\n[http://post-tracking-alerts.net/fee-payment]",
+      isPhishing: true,
+      explanation: "Creates false urgency over a tiny fee, prompting immediate action, and uses a generic tracking domain instead of a known carrier."
+    },
+    {
+      id: "SCENARIO_6",
+      title: "Developer invited you to a repository",
+      sender: "noreply@github.com",
+      content: "Developer has invited you to collaborate on the 'core-infrastructure' repository.\n\nYou can accept or decline this invitation by logging into your GitHub account.",
+      isPhishing: false,
+      explanation: "This is a standard GitHub notification format sent from the correct 'github.com' domain without suspicious masked links."
+    },
+    {
+      id: "SCENARIO_7",
+      title: "FINAL NOTICE: Office 365 License Expired",
+      sender: "admin@microsoft-office-billing.cc",
+      content: "Your enterprise Office 365 licenses have expired. Your email and files will be deleted in 2 hours unless you renew your payment details here: [http://microsoft-office-billing.cc/renew]",
+      isPhishing: true,
+      explanation: "Extremely high artificial urgency ('deleted in 2 hours') and uses an unofficial '.cc' domain rather than official Microsoft billing endpoints."
+    },
+    {
+      id: "SCENARIO_8",
+      title: "Urgent Wire Transfer Request",
+      sender: "ceo.name@gmail.com",
+      content: "Are you at your desk? I'm tied up in a meeting and need you to urgently process a wire transfer to a new vendor. Please reply immediately and I will send the banking details.",
+      isPhishing: true,
+      explanation: "A classic Business Email Compromise (BEC) attempt. The 'CEO' is using a free Gmail address instead of a corporate email and is asking for bypassed financial procedures."
+    },
+    {
+      id: "SCENARIO_9",
+      title: "Scheduled Maintenance: Payroll System",
+      sender: "sysadmin@yourcompany.com",
+      content: "Notice: The payroll portal will be offline this Saturday from 2 AM to 4 AM for routine database maintenance. Please complete any timesheet approvals before then.",
+      isPhishing: false,
+      explanation: "Expected IT notification behavior. Uses the correct internal domain, gives advance notice, and does not demand credential entry."
+    },
+    {
+      id: "SCENARIO_10",
+      title: "New login to LinkedIn from unknown device",
+      sender: "security@linkedin-alerts-mail.com",
+      content: "We noticed a new login from Russia on your account. If this wasn't you, secure your account right now by resetting your password here: [http://linkedin-alerts-mail.com/secure]",
+      isPhishing: true,
+      explanation: "Plays on fear to solicit credentials. The sender domain 'linkedin-alerts-mail.com' is fake; real notifications come from an official 'linkedin.com' subdomain."
     }
   ];
 
@@ -67,7 +131,7 @@ export default function SimulationPage() {
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 shadow-xl">
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-800">
           <div className="flex items-center space-x-3 text-neutral-400">
-            <span className="font-medium">Scenario {currentScenario + 1} of {scenarios.length}</span>
+            <span className="font-medium">Threat Scenario {currentScenario + 1}</span>
           </div>
           <p className="text-lg font-semibold text-neutral-200">{scenario.title}</p>
         </div>

@@ -11,18 +11,8 @@ export default function AnalyzerPage() {
   const [copied, setCopied] = useState(false);
   const [scanStep, setScanStep] = useState(0);
 
-  // Debounce logic for real-time analysis
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (content.trim()) {
-        performAnalysis(content, inputType);
-      } else {
-        setResult(null);
-      }
-    }, 1500);
-
-    return () => clearTimeout(handler);
-  }, [content, inputType]);
+  // Auto-analysis removed to prevent API Rate Limit (429) exhaustion.
+  // Analysis is now strictly triggered via the "Force Deep Scan" button.
 
   const performAnalysis = async (text: string, type: "url" | "text") => {
     setIsAnalyzing(true);

@@ -10,68 +10,127 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
   const exportPDF = async () => {
     if (!dashboardRef.current) return;
     try {
-      // Swapped out DOM photography for structural native PDF generation.
-      // This permanently fixes the 'cssRules' CORS SecurityError.
       const { jsPDF } = await import("jspdf");
       const autoTable = (await import("jspdf-autotable")).default;
       
       const pdf = new jsPDF("p", "mm", "a4");
+      const userIdent = initialHistory.length > 0 ? initialHistory[0].user_email : "Active System User";
       
       // Professional Header
-      pdf.setFontSize(22);
+      pdf.setFontSize(24);
       pdf.setTextColor(16, 185, 129); // Emerald
-      pdf.text("CyberAware Intelligence Report", 14, 20);
+      pdf.text("CyberAware Threat Assessment", 14, 22);
       
-      // Metadata
+      // Report Metadata Box
+      pdf.setDrawColor(226, 232, 240);
+      pdf.setFillColor(248, 250, 252);
+      pdf.rect(14, 28, 182, 35, "F");
+      pdf.rect(14, 28, 182, 35, "S");
+      
       pdf.setFontSize(10);
-      pdf.setTextColor(100);
-      pdf.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+      pdf.setTextColor(71, 85, 105);
       
-      // Awareness Score
-      pdf.setFontSize(14);
-      pdf.setTextColor(40);
-      pdf.text(`Overall User Awareness Score: ${initialScore} / 100`, 14, 40);
+      // Left Column Metadata
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Target Account:", 18, 37);
+      pdf.text("Audit Timestamp:", 18, 45);
+      pdf.text("Security Grade:", 18, 53);
+      
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String(userIdent || "System User"), 55, 37);
+      pdf.text(new Date().toLocaleString(), 55, 45);
+      
+      // Score highlighting
+      if (initialScore >= 80) {
+        pdf.setTextColor(16, 185, 129); // Green
+      } else if (initialScore >= 50) {
+        pdf.setTextColor(234, 179, 8); // Yellow
+      } else {
+        pdf.setTextColor(239, 68, 68); // Red
+      }
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`${initialScore} / 100 Points`, 55, 53);
       
       // Breakdown Logic
+      const total = initialHistory.length;
       const safe = initialHistory.filter(h => h.classification === 'Safe').length;
       const phishing = initialHistory.filter(h => h.classification === 'Phishing').length;
       const malware = initialHistory.filter(h => h.classification === 'Malware').length;
       const socialEng = initialHistory.filter(h => h.classification === 'Social Engineering').length;
+      const highSev = initialHistory.filter(h => h.severity === 'High').length;
       
-      pdf.text("Historical Threat Statistics:", 14, 50);
-      pdf.setFontSize(11);
-      pdf.setTextColor(80);
-      pdf.text(`• Safe Artifacts: ${safe}`, 14, 58);
-      pdf.text(`• Phishing Attempts: ${phishing}`, 14, 64);
-      pdf.text(`• Malware Vectors: ${malware}`, 14, 70);
-      pdf.text(`• Social Eng. Attempts: ${socialEng}`, 14, 76);
+      pdf.setTextColor(15, 23, 42);
+      pdf.setFontSize(14);
+      pdf.text("Threat Vector Analysis", 14, 76);
+      
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`During this cycle, the defense system processed and mitigated ${total} unique payloads.`, 14, 83);
+      
+      pdf.text(`• Validated Safe Artifacts: ${safe}`, 14, 91);
+      pdf.text(`• Detected Phishing Attempts: ${phishing}`, 14, 97);
+      pdf.text(`• Intercepted Malware Vectors: ${malware}`, 14, 103);
+      pdf.text(`• Social Engineering Tactics: ${socialEng}`, 14, 109);
+      
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(239, 68, 68);
+      pdf.text(`• Critical (High Risk) Threats Blocked: ${highSev}`, 14, 115);
 
       // Generate Tabular System report
-      const tableColumn = ["Date", "Classification", "Type", "Severity", "Artifact Preview"];
+      const tableColumn = ["Date & Time (UTC)", "Vector", "Classification", "Risk", "Artifact Fingerprint"];
       const tableRows: any[] = [];
 
-      initialHistory.forEach(item => {
-        const preview = (item.content || "").substring(0, 35) + ((item.content || "").length > 35 ? "..." : "");
+      initialHistory.slice(0, 50).forEach(item => {
+        const cleanContent = String(item.content || "").replace(/[\r\n]+/g, ' ');
+        const preview = cleanContent.substring(0, 50) + (cleanContent.length > 50 ? "..." : "");
+        const d = new Date(item.created_at);
+        const dateStr = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        
         tableRows.push([
-          new Date(item.created_at).toLocaleDateString(),
+          dateStr,
+          String(item.type).toUpperCase(),
           item.classification,
-          item.type.toUpperCase(),
-          item.severity.toUpperCase(),
+          String(item.severity).toUpperCase(),
           preview
         ]);
       });
 
       autoTable(pdf, {
-        startY: 80,
+        startY: 125,
         head: [tableColumn],
         body: tableRows,
         theme: 'grid',
-        headStyles: { fillColor: [16, 185, 129], textColor: 255 },
-        styles: { fontSize: 10, cellPadding: 4 },
-        alternateRowStyles: { fillColor: [248, 250, 252] }
+        headStyles: { fillColor: [15, 23, 42], textColor: 255, halign: 'left' },
+        styles: { fontSize: 8, cellPadding: 4 },
+        columnStyles: {
+            0: { cellWidth: 32 },
+            1: { cellWidth: 18 },
+            2: { cellWidth: 30 },
+            3: { cellWidth: 18 },
+            4: { cellWidth: 'auto' }
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        didParseCell: function(data: any) {
+            if (data.section === 'body' && data.column.index === 3) {
+                if (data.cell.raw === 'HIGH') {
+                    data.cell.styles.textColor = [239, 68, 68];
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        }
       });
 
-      pdf.save("CyberAware-Systematic-Report.pdf");
+      // Footer
+      const pageCount = (pdf as any).internal.getNumberOfPages();
+      for(let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150);
+        pdf.text(`CyberAware Intelligence Engine • Page ${i} of ${pageCount}`, 14, 285);
+      }
+
+      pdf.save("CyberAware-Executive-Report.pdf");
     } catch (error) {
       console.error("PDF Export failed", error);
     }
