@@ -12,12 +12,12 @@ const transporter = nodemailer.createTransport({
 
 export async function sendOTP(toEmail: string, code: string) {
   const mailOptions = {
-    from: `"CrewSync Security" <${process.env.EMAIL_USER}>`,
+    from: `"CyberAware Security" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: 'Your CrewSync Verification Code',
+    subject: 'Your CyberAware Verification Code',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 24px; color: #333;">
-        <h2 style="color: #2563eb; text-align: center; margin-bottom: 24px;">Welcome to CrewSync!</h2>
+        <h2 style="color: #2563eb; text-align: center; margin-bottom: 24px;">Welcome to CyberAware!</h2>
         <p>Hello,</p>
         <p>Please use the verification code below to complete your registration:</p>
         <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
@@ -25,7 +25,7 @@ export async function sendOTP(toEmail: string, code: string) {
         </div>
         <p>This code will expire in 10 minutes.</p>
         <hr style="border: 0; border-top: 1px solid #eaeaea; margin: 24px 0;" />
-        <p style="font-size: 12px; color: #64748b; text-align: center;">&copy; ${new Date().getFullYear()} CrewSync. All rights reserved.</p>
+        <p style="font-size: 12px; color: #64748b; text-align: center;">&copy; ${new Date().getFullYear()} CyberAware. All rights reserved.</p>
       </div>
     `,
   };
@@ -44,9 +44,9 @@ export async function sendOTP(toEmail: string, code: string) {
 
 export async function sendGoogleWelcomeEmail(toEmail: string, name: string) {
   const mailOptions = {
-    from: `"CrewSync" <${process.env.EMAIL_USER}>`,
+    from: `"CyberAware" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: 'Welcome to CrewSync! 🎉',
+    subject: 'Welcome to CyberAware! 🎉',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 24px; color: #333;">
         <h2 style="color: #2563eb; text-align: center; margin-bottom: 24px;">Registration Successful!</h2>
@@ -54,7 +54,7 @@ export async function sendGoogleWelcomeEmail(toEmail: string, name: string) {
         <p>Thank you for signing up with Google! Your email <strong>${toEmail}</strong> has been automatically verified by Google's secure OAuth system.</p>
         <p>You can now log in securely without entering any passwords using the "Continue with Google" button.</p>
         <hr style="border: 0; border-top: 1px solid #eaeaea; margin: 24px 0;" />
-        <p style="font-size: 12px; color: #64748b; text-align: center;">&copy; ${new Date().getFullYear()} CrewSync. All rights reserved.</p>
+        <p style="font-size: 12px; color: #64748b; text-align: center;">&copy; ${new Date().getFullYear()} CyberAware. All rights reserved.</p>
       </div>
     `,
   };
