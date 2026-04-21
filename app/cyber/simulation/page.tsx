@@ -1,102 +1,49 @@
 "use client";
 
-import { useState } from "react";
-import { MailWarning, CheckCircle, XCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MailWarning, ShieldCheck, ShieldAlert, CheckCircle, XCircle, Mail, User, Clock, ArrowRight, Activity, Smartphone, MessageSquare, Loader2 } from "lucide-react";
+
+interface Scenario {
+  type: "email" | "sms" | "messaging";
+  title: "title";
+  sender: "sender";
+  content: "content";
+  isPhishing: boolean;
+  explanation: "explanation";
+}
 
 export default function SimulationPage() {
-  const [currentScenario, setCurrentScenario] = useState(0);
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+  const [isLoadingScenario, setIsLoadingScenario] = useState(true);
+  const [scenarioCount, setScenarioCount] = useState(1);
   const [result, setResult] = useState<"success" | "fail" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const scenarios = [
-    {
-      id: "SCENARIO_1",
-      title: "Urgent Password Reset",
-      sender: "security@accounts-google.com",
-      content: "Dear User, your account has been compromised. Please click the link below to verify your identity immediately or your account will be suspended in 24 hours.\n\n[http://accounts.google-security-update.com/login]",
-      isPhishing: true,
-      explanation: "The sender domain is 'accounts-google.com' (hyphen, not dot), creating urgency ('suspended in 24 hours'), and the link goes to 'google-security-update.com'."
-    },
-    {
-      id: "SCENARIO_2",
-      title: "Invoice #INV-4921",
-      sender: "billing@yourcompany.com",
-      content: "Hi Team,\n\nPlease find attached the invoice for the Q3 software licenses. Let me know if you have any questions.\n\nBest,\nFinance Dept",
-      isPhishing: false,
-      explanation: "No suspicious links, expected domain behavior, and no artificial urgency or threatening language."
-    },
-    {
-      id: "SCENARIO_3",
-      title: "IT Support - Action Required",
-      sender: "it-support@yourc0mpany-portal.com",
-      content: "Hello, we are updating the corporate VPN servers tonight. Please log in to the new portal to ensure your credentials are functioning post-migration.\n\n[http://yourc0mpany-portal.com/vpn-auth]",
-      isPhishing: true,
-      explanation: "The domain uses a zero instead of an 'o' in the domain name (yourc0mpany), a classic typosquatting technique."
-    },
-    {
-      id: "SCENARIO_4",
-      title: "New Annual Leave Policy FY27",
-      sender: "hr@yourcompany.com",
-      content: "Hi Everyone,\n\nPlease review the attached document outlining the changes to our PTO rollover policy effective next month. No immediate action is required.\n\nRegards,\nHuman Resources",
-      isPhishing: false,
-      explanation: "Standard internal communication. No urgent call to action, domain is correct, and it is purely informational."
-    },
-    {
-      id: "SCENARIO_5",
-      title: "Failed Delivery Attempt: Package #948210",
-      sender: "no-reply@post-tracking-alerts.net",
-      content: "Your package could not be delivered due to an unpaid customs fee of $2.99. Click here to pay the fee and reschedule delivery immediately.\n\n[http://post-tracking-alerts.net/fee-payment]",
-      isPhishing: true,
-      explanation: "Creates false urgency over a tiny fee, prompting immediate action, and uses a generic tracking domain instead of a known carrier."
-    },
-    {
-      id: "SCENARIO_6",
-      title: "Developer invited you to a repository",
-      sender: "noreply@github.com",
-      content: "Developer has invited you to collaborate on the 'core-infrastructure' repository.\n\nYou can accept or decline this invitation by logging into your GitHub account.",
-      isPhishing: false,
-      explanation: "This is a standard GitHub notification format sent from the correct 'github.com' domain without suspicious masked links."
-    },
-    {
-      id: "SCENARIO_7",
-      title: "FINAL NOTICE: Office 365 License Expired",
-      sender: "admin@microsoft-office-billing.cc",
-      content: "Your enterprise Office 365 licenses have expired. Your email and files will be deleted in 2 hours unless you renew your payment details here: [http://microsoft-office-billing.cc/renew]",
-      isPhishing: true,
-      explanation: "Extremely high artificial urgency ('deleted in 2 hours') and uses an unofficial '.cc' domain rather than official Microsoft billing endpoints."
-    },
-    {
-      id: "SCENARIO_8",
-      title: "Urgent Wire Transfer Request",
-      sender: "ceo.name@gmail.com",
-      content: "Are you at your desk? I'm tied up in a meeting and need you to urgently process a wire transfer to a new vendor. Please reply immediately and I will send the banking details.",
-      isPhishing: true,
-      explanation: "A classic Business Email Compromise (BEC) attempt. The 'CEO' is using a free Gmail address instead of a corporate email and is asking for bypassed financial procedures."
-    },
-    {
-      id: "SCENARIO_9",
-      title: "Scheduled Maintenance: Payroll System",
-      sender: "sysadmin@yourcompany.com",
-      content: "Notice: The payroll portal will be offline this Saturday from 2 AM to 4 AM for routine database maintenance. Please complete any timesheet approvals before then.",
-      isPhishing: false,
-      explanation: "Expected IT notification behavior. Uses the correct internal domain, gives advance notice, and does not demand credential entry."
-    },
-    {
-      id: "SCENARIO_10",
-      title: "New login to LinkedIn from unknown device",
-      sender: "security@linkedin-alerts-mail.com",
-      content: "We noticed a new login from Russia on your account. If this wasn't you, secure your account right now by resetting your password here: [http://linkedin-alerts-mail.com/secure]",
-      isPhishing: true,
-      explanation: "Plays on fear to solicit credentials. The sender domain 'linkedin-alerts-mail.com' is fake; real notifications come from an official 'linkedin.com' subdomain."
+  const fetchScenario = async () => {
+    setIsLoadingScenario(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/cyber/generate-scenario", { method: "POST" });
+      const data = await res.json();
+      setScenario(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingScenario(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchScenario();
+  }, []);
 
   const handleDecision = async (userSaysPhishing: boolean) => {
+    if (!scenario) return;
     setIsSubmitting(true);
-    const scenario = scenarios[currentScenario];
     const success = userSaysPhishing === scenario.isPhishing;
     
     try {
+      // Still logging to simulate route so DB gets updated with scores
       await fetch("/api/cyber/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,88 +58,172 @@ export default function SimulationPage() {
   };
 
   const nextScenario = () => {
-    setResult(null);
-    setCurrentScenario((prev) => (prev + 1) % scenarios.length);
+    setScenarioCount((prev) => prev + 1);
+    fetchScenario();
   };
 
-  const scenario = scenarios[currentScenario];
+  const getIcon = (type: string) => {
+    switch (type) {
+      case "sms": return <Smartphone size={14} />;
+      case "messaging": return <MessageSquare size={14} />;
+      default: return <Mail size={14} />;
+    }
+  };
+
+  const getTypeText = (type: string) => {
+    switch (type) {
+      case "sms": return "Incoming SMS Text";
+      case "messaging": return "Incoming Direct Message";
+      default: return "Incoming Email Transmission";
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-         <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-500">
-           Phishing Simulator
-         </h2>
-         <p className="text-neutral-400 mt-2">
-           Enhance your awareness score by identifying which of the following scenarios are phishing attempts.
-         </p>
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-neutral-800 pb-4 gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold text-neutral-100 flex items-center gap-2">
+            <Activity size={24} className="text-blue-500" /> Threat Identification Module
+          </h2>
+          <p className="text-sm text-neutral-400 mt-1">Sandbox Environment: Analyze the incoming communication and designate threat level.</p>
+        </div>
+        <div className="text-left md:text-right">
+          <span className="text-xs uppercase tracking-widest font-bold text-neutral-500 block mb-1">Scenario</span>
+          <div className="text-lg font-mono text-neutral-300 font-medium">
+            <span className="text-white">{scenarioCount}</span> / ∞
+          </div>
+        </div>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 shadow-xl">
-        <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-800">
-          <div className="flex items-center space-x-3 text-neutral-400">
-            <span className="font-medium">Threat Scenario {currentScenario + 1}</span>
-          </div>
-          <p className="text-lg font-semibold text-neutral-200">{scenario.title}</p>
-        </div>
-
-        <div className="bg-neutral-950 p-6 rounded-lg border border-neutral-800 font-mono text-sm mb-8">
-           <p className="mb-4 text-neutral-500">From: <span className="text-neutral-300">{scenario.sender}</span></p>
-           <div className="whitespace-pre-wrap text-neutral-300">
-             {scenario.content}
-           </div>
-        </div>
-
-        {result === null ? (
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <button
-              onClick={() => handleDecision(true)}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-            >
-              <MailWarning size={18} /> It's Phishing
-            </button>
-            <button
-              onClick={() => handleDecision(false)}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto px-8 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-            >
-              <CheckCircle size={18} /> Looks Safe
-            </button>
-          </div>
-        ) : (
-          <div className={`p-6 rounded-lg border ${
-            result === "success" ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20"
-          }`}>
-             <div className="flex items-start gap-4">
-               {result === "success" ? (
-                 <CheckCircle className="text-green-500 mt-1" size={24} />
-               ) : (
-                 <XCircle className="text-red-500 mt-1" size={24} />
-               )}
-               <div>
-                  <h3 className={`text-xl font-bold mb-1 ${result === "success" ? "text-green-400" : "text-red-400"}`}>
-                    {result === "success" ? "Correct Analysis!" : "Oops, you missed it!"}
-                  </h3>
-                  <p className="text-neutral-300 text-sm mb-4">
-                    {result === "success" 
-                      ? "You correctly identified the nature of this threat." 
-                      : "You were tricked by this scenario. Always stay vigilant."}
-                  </p>
-                  <div className="bg-neutral-900/50 p-4 rounded border border-neutral-800/50">
-                    <h4 className="text-xs uppercase text-neutral-500 tracking-wider mb-2 font-bold">Explanation</h4>
-                    <p className="text-neutral-300 text-sm">{scenario.explanation}</p>
-                  </div>
-                  <button
-                    onClick={nextScenario}
-                    className="mt-6 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-6 py-2 rounded-lg transition-colors"
-                  >
-                    Next Scenario
-                  </button>
-               </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         
+         {/* Email/Payload Sandbox (Left 2 cols) */}
+         <div className="lg:col-span-2 bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden flex flex-col h-full shadow-sm relative relative">
+           <div className="bg-neutral-950 px-4 py-3 flex items-center justify-between border-b border-neutral-800">
+             <div className="flex items-center gap-2 text-neutral-400 text-xs uppercase tracking-wider font-semibold">
+                {scenario ? getIcon(scenario.type) : <Activity size={14} />} 
+                {scenario ? getTypeText(scenario.type) : "Awaiting Data"}
              </div>
-          </div>
-        )}
+           </div>
+           
+           {isLoadingScenario ? (
+             <div className="flex-grow flex flex-col items-center justify-center p-12 text-neutral-500 space-y-4 bg-white/5 backdrop-blur-sm">
+                <Loader2 size={32} className="animate-spin text-blue-500" />
+                <p className="text-sm uppercase tracking-widest font-bold font-mono">Synthesizing Neural Payload...</p>
+             </div>
+           ) : scenario ? (
+             <>
+               {/* Metadata */}
+               <div className="px-6 py-5 bg-white text-neutral-900 border-b border-neutral-200">
+                  <h3 className="text-xl font-medium mb-5">{scenario.title}</h3>
+                  <div className="flex items-start justify-between text-sm">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500 flex-shrink-0">
+                         <User size={20} />
+                       </div>
+                       <div className="min-w-0">
+                         <p className="font-semibold truncate">
+                           {(scenario.sender || "").includes('@') ? (scenario.sender || "").split('@')[0] : (scenario.sender || "Unknown")} <span className="font-normal text-neutral-500">&lt;{scenario.sender || "Unknown Sender"}&gt;</span>
+                         </p>
+                         <p className="text-neutral-500 text-xs mt-0.5 truncate">To: You &lt;user@corporate.local&gt;</p>
+                       </div>
+                    </div>
+                    <div className="text-neutral-500 text-xs flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap ml-4">
+                      <Clock size={12} /> Today, {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                  </div>
+               </div>
+
+               {/* Payload Body */}
+               <div className={`px-6 py-8 flex-grow font-sans text-sm leading-relaxed whitespace-pre-wrap ${scenario.type === 'sms' ? 'bg-neutral-100 text-neutral-800 font-medium' : 'bg-white text-neutral-800'}`}>
+                  {scenario.content}
+               </div>
+             </>
+           ) : (
+             <div className="flex-grow flex flex-col items-center justify-center p-12 text-red-500">
+                <ShieldAlert size={32} className="mb-2" />
+                Error loading scenario.
+             </div>
+           )}
+         </div>
+
+         {/* Control Panel (Right 1 col) */}
+         <div className="flex flex-col space-y-6">
+            
+            <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-5 shadow-sm h-full">
+               <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-500 mb-5 flex items-center gap-2 border-b border-neutral-800 pb-3">
+                 <ShieldAlert size={14} /> Analyst Controls
+               </h3>
+               
+               {isLoadingScenario ? (
+                 <div className="flex justify-center p-8 opacity-50">
+                   <div className="animate-pulse flex items-center gap-2 text-xs text-neutral-500 font-mono">
+                     Initializing controls...
+                   </div>
+                 </div>
+               ) : result === null ? (
+                 <div className="space-y-3">
+                   <p className="text-xs text-neutral-400 mb-4 leading-relaxed">
+                     Review the headers, origin domain, and payload. Flag suspicious communications to protect the network.
+                   </p>
+                   <button
+                     onClick={() => handleDecision(true)}
+                     disabled={isSubmitting}
+                     className="w-full py-3 px-4 bg-transparent hover:bg-red-950/30 text-red-400 border border-red-900/50 hover:border-red-500/50 rounded transition-all flex items-center justify-between text-sm font-medium group disabled:opacity-50"
+                   >
+                     <span className="flex items-center gap-2"><MailWarning size={16} /> Flag as Threat</span>
+                     <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                   </button>
+                   <button
+                     onClick={() => handleDecision(false)}
+                     disabled={isSubmitting}
+                     className="w-full py-3 px-4 bg-transparent hover:bg-emerald-950/30 text-emerald-400 border border-emerald-900/50 hover:border-emerald-500/50 rounded transition-all flex items-center justify-between text-sm font-medium group disabled:opacity-50"
+                   >
+                     <span className="flex items-center gap-2"><ShieldCheck size={16} /> Mark as Safe</span>
+                     <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                   </button>
+                 </div>
+               ) : (
+                 <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col h-full">
+                    <div className={`p-4 rounded border ${result === "success" ? "bg-emerald-950/20 border-emerald-900/50" : "bg-red-950/20 border-red-900/50"}`}>
+                      <div className="flex items-center gap-3 mb-2">
+                        {result === "success" ? (
+                          <CheckCircle size={18} className="text-emerald-400" />
+                        ) : (
+                          <XCircle size={18} className="text-red-400" />
+                        )}
+                        <span className={`text-sm font-bold ${result === "success" ? "text-emerald-400" : "text-red-400"}`}>
+                          {result === "success" ? "Assessment Accurate" : "Assessment Failed"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-300">
+                        {result === "success" 
+                          ? "Threat classification matches standard definitions." 
+                          : "Your classification did not align with actual threat markers. A breach may have occurred."}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-neutral-950 p-4 rounded border border-neutral-800">
+                      <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-2 block">Post-Incident Report</span>
+                      <p className="text-xs text-neutral-300 leading-relaxed font-mono">
+                        {scenario?.explanation}
+                      </p>
+                    </div>
+
+                    <div className="mt-auto pt-4">
+                      <button
+                        onClick={nextScenario}
+                        className="w-full py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded text-sm font-medium transition-colors border border-neutral-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        <Activity size={16} /> Request Next Target
+                      </button>
+                    </div>
+                 </div>
+               )}
+            </div>
+         </div>
       </div>
     </div>
   );

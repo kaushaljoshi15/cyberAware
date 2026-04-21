@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShieldAlert, BarChart3, MailWarning, Download, LogOut, User } from "lucide-react";
+import { ShieldAlert, BarChart3, MailWarning, Download, LogOut, User, Database, KeyRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function CyberLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +36,8 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
     { name: "Dashboard", href: "/cyber", icon: BarChart3 },
     { name: "Threat Analyzer", href: "/cyber/analyzer", icon: ShieldAlert },
     { name: "Phishing Simulation", href: "/cyber/simulation", icon: MailWarning },
+    { name: "Threat Database", href: "/cyber/database", icon: Database },
+    { name: "Password Cracker", href: "/cyber/password-sandbox", icon: KeyRound },
   ];
 
   return (

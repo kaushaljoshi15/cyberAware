@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
 // Note: Replace with actual client ID from environment
@@ -29,18 +29,20 @@ export async function POST(request: Request) {
     const { email, name, sub: google_id } = payload;
 
     // 2. Check if user exists
-    let result = await query('SELECT * FROM users WHERE email = $1', [email]);
-    let user = result.rows[0];
+    let user = await prisma.users.findUnique({ where: { email } });
 
     if (!user) {
       // 3. If no user, silently register them
       // Since it's from Google, we automatically consider email verified
-      const insertResult = await query(
-        `INSERT INTO users (name, email, google_id, role, is_verified) 
-         VALUES ($1, $2, $3, 'volunteer', TRUE) RETURNING id, name, email, role, is_verified`,
-        [name, email, google_id]
-      );
-      user = insertResult.rows[0];
+      user = await prisma.users.create({
+        data: {
+          name: name || 'Google User',
+          email,
+          google_id,
+          role: 'volunteer',
+          is_verified: true
+        }
+      });
 
       // Send the Welcome Email to demonstrate Nodemailer works perfectly with Google Auth too
       const { sendGoogleWelcomeEmail } = await import('@/lib/email');
@@ -49,7 +51,10 @@ export async function POST(request: Request) {
     } else {
       // If user exists but didn't have google_id linked, link it now
       if (!user.google_id) {
-        await query('UPDATE users SET google_id = $1, is_verified = TRUE WHERE email = $2', [google_id, email]);
+        user = await prisma.users.update({
+          where: { email },
+          data: { google_id, is_verified: true }
+        });
       }
     }
 

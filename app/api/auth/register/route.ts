@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 // Define the Master Admin Email here
 const SUPER_ADMIN_EMAIL = 'joshikaushald1596@gmail.com'; // Change this to your actual email
@@ -41,10 +41,9 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$
     }
 
     // 3. Check if user already exists
-    const existingUser = await query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = await prisma.users.findUnique({ where: { email } });
     
-    if (existingUser && existingUser.rows && existingUser.rows.length > 0) {
-      const user = existingUser.rows[0];
+    if (user) {
       
       let errorMessage = 'This email is already registered. Please go to the Login page.';
       
@@ -64,29 +63,29 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$
 
     // 5. Insert into Database using the safe 'assignedRole'
     // Ensure they are inserted as unverified
-    const newUser = await query(
-      `INSERT INTO users (name, email, password_hash, role, is_verified) 
-       VALUES ($1, $2, $3, $4, FALSE) RETURNING id, name, email, role`,
-      [name, email, hashedPassword, assignedRole]
-    );
-
-    let createdUser = null;
-    if (newUser) {
-      if (newUser.rows) {
-        createdUser = newUser.rows[0];
+    const createdUser = await prisma.users.create({
+      data: {
+        name,
+        email,
+        password_hash: hashedPassword,
+        role: assignedRole,
+        is_verified: false,
       }
-    }
+    });
 
     // 6. Generate 6-digit OTP
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
     // 7. Save OTP to verification_codes table
-    await query(`DELETE FROM verification_codes WHERE email = $1`, [email]); // Remove old codes
-    await query(
-      `INSERT INTO verification_codes (email, code, expires_at) VALUES ($1, $2, $3)`,
-      [email, otpCode, expiresAt]
-    );
+    await prisma.verification_codes.deleteMany({ where: { email } });
+    await prisma.verification_codes.create({
+      data: {
+        email,
+        code: otpCode,
+        expires_at: expiresAt
+      }
+    });
 
     // 8. Send the OTP via Email
     const { sendOTP } = await import('@/lib/email');

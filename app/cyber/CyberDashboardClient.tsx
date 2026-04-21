@@ -1,8 +1,33 @@
 "use client";
 
 import { useRef } from "react";
-import { Download, ShieldCheck, MailWarning, Bug, Activity } from "lucide-react";
+import { Download, ShieldCheck, MailWarning, Bug, Activity, ShieldAlert, Zap, Users } from "lucide-react";
+import Link from "next/link";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+
+// 3D Radar Animation Component
+const Radar3D = () => (
+  <div className="relative w-40 h-40 flex items-center justify-center perspective-[800px]">
+    {/* Base Grid */}
+    <div className="absolute inset-0 rounded-full border-2 border-emerald-500/30 bg-emerald-950/20 shadow-[0_0_50px_rgba(16,185,129,0.15)] flex items-center justify-center transform preserve-3d rotate-x-[60deg] animate-[pulse_4s_ease-in-out_infinite]">
+       {/* Rings */}
+       <div className="absolute w-[80%] h-[80%] rounded-full border border-emerald-500/40" />
+       <div className="absolute w-[60%] h-[60%] rounded-full border border-emerald-500/50" />
+       <div className="absolute w-[40%] h-[40%] rounded-full border border-emerald-500/60" />
+       {/* Scanner line */}
+       <div className="absolute left-1/2 top-1/2 w-1/2 h-0.5 bg-emerald-400 origin-[0%_50%] animate-[spin_3s_linear_infinite] shadow-[0_0_15px_#34d399,0_0_30px_#34d399]" />
+       {/* Scanning overlay gradient */}
+       <div className="absolute inset-0 rounded-full animate-[spin_3s_linear_infinite] opacity-40 mix-blend-screen" style={{ background: 'conic-gradient(from 0deg, transparent 0deg, rgba(16, 185, 129, 0.6) 60deg, transparent 60deg)' }} />
+    </div>
+    
+    {/* Center Element floating above */}
+    <div className="relative z-10 translate-y-[-10px] animate-[bounce_4s_ease-in-out_infinite]">
+      <div className="bg-emerald-950/90 p-3 rounded-xl border border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.5)] backdrop-blur-md">
+        <ShieldCheck size={28} className="text-emerald-400" />
+      </div>
+    </div>
+  </div>
+);
 
 export default function CyberDashboardClient({ initialScore, initialHistory }: { initialScore: number, initialHistory: any[] }) {
   const dashboardRef = useRef<HTMLDivElement>(null);
@@ -16,41 +41,64 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
       const pdf = new jsPDF("p", "mm", "a4");
       const userIdent = initialHistory.length > 0 ? initialHistory[0].user_email : "Active System User";
       
-      // Professional Header
-      pdf.setFontSize(24);
-      pdf.setTextColor(16, 185, 129); // Emerald
-      pdf.text("CyberAware Threat Assessment", 14, 22);
+      // Helper to draw the complex dark mode UI background
+      const drawDarkBackground = () => {
+        pdf.setFillColor(10, 15, 20); // Hex #0A0F14
+        pdf.rect(0, 0, 210, 297, "F");
+        pdf.setDrawColor(20, 30, 40); // Hex #141E28
+        pdf.setLineWidth(0.2);
+        for(let i = 0; i < 300; i += 10) { pdf.line(0, i, 210, i); }
+        for(let j = 0; j < 210; j += 10) { pdf.line(j, 0, j, 297); }
+      };
+
+      // Draw background manually for the first page
+      drawDarkBackground();
+
+      // Override addPage to automatically fill the background on new pages created by autoTable
+      const originalAddPage = pdf.addPage.bind(pdf);
+      (pdf as any).addPage = function(...args: any[]) {
+        originalAddPage(...args);
+        drawDarkBackground();
+        return pdf;
+      };
       
-      // Report Metadata Box
-      pdf.setDrawColor(226, 232, 240);
-      pdf.setFillColor(248, 250, 252);
-      pdf.rect(14, 28, 182, 35, "F");
-      pdf.rect(14, 28, 182, 35, "S");
+      // Executive Header
+      pdf.setFontSize(28);
+      pdf.setTextColor(52, 211, 153); // Emerald 400
+      pdf.setFont("helvetica", "bold");
+      pdf.text("CYBERAWARE THREAT INTEL", 14, 25);
       
       pdf.setFontSize(10);
-      pdf.setTextColor(71, 85, 105);
-      
-      // Left Column Metadata
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Target Account:", 18, 37);
-      pdf.text("Audit Timestamp:", 18, 45);
-      pdf.text("Security Grade:", 18, 53);
-      
+      pdf.setTextColor(148, 163, 184); // Slate 400
       pdf.setFont("helvetica", "normal");
-      pdf.text(String(userIdent || "System User"), 55, 37);
-      pdf.text(new Date().toLocaleString(), 55, 45);
+      pdf.text("CLASSIFIED INCIDENT DOSSIER / GLOBAL SCAN", 14, 32);
+
+      // Meta Box
+      pdf.setDrawColor(52, 211, 153);
+      pdf.setLineWidth(0.5);
+      pdf.setFillColor(15, 23, 42); // slate 900
+      pdf.rect(14, 40, 182, 35, "FD"); // Fill and Draw
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(148, 163, 184);
+      pdf.setFont("courier", "bold");
+      pdf.text("> TARGET IDENTIFIER:", 18, 48);
+      pdf.text("> AUDIT TIMESTAMP  :", 18, 56);
+      pdf.text("> SECURITY GRADE   :", 18, 64);
       
-      // Score highlighting
-      if (initialScore >= 80) {
-        pdf.setTextColor(16, 185, 129); // Green
-      } else if (initialScore >= 50) {
-        pdf.setTextColor(234, 179, 8); // Yellow
-      } else {
-        pdf.setTextColor(239, 68, 68); // Red
-      }
-      pdf.setFont("helvetica", "bold");
-      pdf.text(`${initialScore} / 100 Points`, 55, 53);
+      pdf.setFont("courier", "normal");
+      pdf.setTextColor(248, 250, 252);
+      pdf.text(String(userIdent), 65, 48);
+      pdf.text(new Date().toLocaleString(), 65, 56);
       
+      // Score marking
+      if (initialScore >= 80) pdf.setTextColor(52, 211, 153);
+      else if (initialScore >= 50) pdf.setTextColor(250, 204, 21);
+      else pdf.setTextColor(248, 113, 113);
+      
+      pdf.setFont("courier", "bold");
+      pdf.text(`[ ${initialScore} / 100 POINTS ]`, 65, 64);
+
       // Breakdown Logic
       const total = initialHistory.length;
       const safe = initialHistory.filter(h => h.classification === 'Safe').length;
@@ -59,31 +107,34 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
       const socialEng = initialHistory.filter(h => h.classification === 'Social Engineering').length;
       const highSev = initialHistory.filter(h => h.severity === 'High').length;
       
-      pdf.setTextColor(15, 23, 42);
+      pdf.setTextColor(248, 250, 252);
       pdf.setFontSize(14);
-      pdf.text("Threat Vector Analysis", 14, 76);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("THREAT VECTOR ANALYSIS", 14, 86);
+      
+      pdf.setDrawColor(52, 211, 153);
+      pdf.line(14, 88, 75, 88); // Decorative line
       
       pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(`During this cycle, the defense system processed and mitigated ${total} unique payloads.`, 14, 83);
+      pdf.setFont("courier", "normal");
+      pdf.setTextColor(148, 163, 184);
+      pdf.text(`System telemetry processed ${total} localized payloads.`, 14, 95);
       
-      pdf.text(`• Validated Safe Artifacts: ${safe}`, 14, 91);
-      pdf.text(`• Detected Phishing Attempts: ${phishing}`, 14, 97);
-      pdf.text(`• Intercepted Malware Vectors: ${malware}`, 14, 103);
-      pdf.text(`• Social Engineering Tactics: ${socialEng}`, 14, 109);
-      
-      pdf.setFont("helvetica", "bold");
-      pdf.setTextColor(239, 68, 68);
-      pdf.text(`• Critical (High Risk) Threats Blocked: ${highSev}`, 14, 115);
+      pdf.setTextColor(52, 211, 153);
+      pdf.text(`[OK]  Validated Safe Artifacts:  ${String(safe).padStart(3, '0')}`, 14, 103);
+      pdf.setTextColor(250, 204, 21);
+      pdf.text(`[WRN] Phishing / Social Eng Blocked: ${String(phishing + socialEng).padStart(3, '0')}`, 14, 109);
+      pdf.setTextColor(248, 113, 113);
+      pdf.text(`[ERR] Intercepted Malware Vectors: ${String(malware).padStart(3, '0')}`, 14, 115);
+      pdf.text(`[CRIT] Critical Severities Triaged: ${String(highSev).padStart(3, '0')}`, 14, 121);
 
       // Generate Tabular System report
-      const tableColumn = ["Date & Time (UTC)", "Vector", "Classification", "Risk", "Artifact Fingerprint"];
+      const tableColumn = ["TIME (UTC)", "VECTOR", "CLASS", "RISK", "FINGERPRINT"];
       const tableRows: any[] = [];
 
       initialHistory.slice(0, 50).forEach(item => {
         const cleanContent = String(item.content || "").replace(/[\r\n]+/g, ' ');
-        const preview = cleanContent.substring(0, 50) + (cleanContent.length > 50 ? "..." : "");
+        const preview = cleanContent.substring(0, 45) + (cleanContent.length > 45 ? "..." : "");
         const d = new Date(item.created_at);
         const dateStr = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
         
@@ -97,24 +148,25 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
       });
 
       autoTable(pdf, {
-        startY: 125,
+        startY: 130,
         head: [tableColumn],
         body: tableRows,
         theme: 'grid',
-        headStyles: { fillColor: [15, 23, 42], textColor: 255, halign: 'left' },
-        styles: { fontSize: 8, cellPadding: 4 },
+        headStyles: { fillColor: [15, 23, 42], textColor: [52, 211, 153], halign: 'left', font: 'courier' },
+        bodyStyles: { fillColor: [10, 15, 20], textColor: [203, 213, 225], font: 'courier' },
+        alternateRowStyles: { fillColor: [15, 23, 42] },
+        styles: { fontSize: 8, cellPadding: 4, lineColor: [30, 41, 59], lineWidth: 0.1 },
         columnStyles: {
             0: { cellWidth: 32 },
-            1: { cellWidth: 18 },
-            2: { cellWidth: 30 },
-            3: { cellWidth: 18 },
+            1: { cellWidth: 16 },
+            2: { cellWidth: 28 },
+            3: { cellWidth: 16 },
             4: { cellWidth: 'auto' }
         },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
         didParseCell: function(data: any) {
             if (data.section === 'body' && data.column.index === 3) {
                 if (data.cell.raw === 'HIGH') {
-                    data.cell.styles.textColor = [239, 68, 68];
+                    data.cell.styles.textColor = [239, 68, 68]; // Hex #EF4444 (red-500)
                     data.cell.styles.fontStyle = 'bold';
                 }
             }
@@ -125,12 +177,13 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
       const pageCount = (pdf as any).internal.getNumberOfPages();
       for(let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
+        pdf.setFont("courier", "normal");
         pdf.setFontSize(8);
-        pdf.setTextColor(150);
-        pdf.text(`CyberAware Intelligence Engine • Page ${i} of ${pageCount}`, 14, 285);
+        pdf.setTextColor(52, 211, 153);
+        pdf.text(`CYBERAWARE INTELLIGENCE ENGINE • TERMINAL PAGE ${i} OF ${pageCount}`, 14, 285);
       }
 
-      pdf.save("CyberAware-Executive-Report.pdf");
+      pdf.save("CyberAware_Threat_Dossier_Classified.pdf");
     } catch (error) {
       console.error("PDF Export failed", error);
     }
@@ -147,53 +200,71 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
     { name: 'Phishing', value: breakdown['Phishing'] || 0, color: '#ef4444' }, // red
     { name: 'Malware', value: breakdown['Malware'] || 0, color: '#eab308' },   // yellow
     { name: 'Social Eng', value: breakdown['Social Engineering'] || 0, color: '#f97316' }, // orange
-    { name: 'Safe', value: breakdown['Safe'] || 0, color: '#22c55e' },         // green
+    { name: 'Safe', value: breakdown['Safe'] || 0, color: '#10b981' },         // emerald
   ].filter(d => d.value > 0);
 
-  // If no data, provide a default empty chart state
   if (data.length === 0) {
     data.push({ name: 'No Data Yet', value: 1, color: '#3f3f46' });
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto perspective-[2000px]">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-500">
-            Awareness Overview
+          <h2 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-500 tracking-tight flex items-center gap-3">
+             <Zap size={28} className="text-emerald-400" /> Awareness Overview
           </h2>
-          <p className="text-neutral-400">Track your progress and recent threat encounters.</p>
+          <p className="text-neutral-400 font-mono text-sm mt-1 uppercase tracking-widest">Global Scan Analytics</p>
         </div>
-        <button
-          onClick={exportPDF}
-          className="flex items-center space-x-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 px-4 py-2 rounded-md transition-all shadow-lg"
-        >
-          <Download size={18} />
-          <span>Export Report</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/cyber/community"
+            className="flex items-center space-x-2 bg-neutral-900 hover:bg-neutral-800 border border-blue-500/50 text-blue-400 px-5 py-2.5 rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:-translate-y-0.5"
+          >
+            <Users size={18} />
+            <span className="font-bold tracking-wide hidden sm:inline">Global Network</span>
+          </Link>
+          <button
+            onClick={exportPDF}
+            className="flex items-center space-x-2 bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-400 px-5 py-2.5 rounded-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:-translate-y-0.5"
+          >
+            <Download size={18} />
+            <span className="font-bold tracking-wide hidden sm:inline">Export Dossier</span>
+          </button>
+        </div>
       </div>
 
       <div ref={dashboardRef} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Radar Animation Box */}
+          <div className="group bg-neutral-900/80 backdrop-blur border border-neutral-800 p-6 rounded-2xl flex flex-col items-center justify-center relative transition-all duration-700 hover:border-emerald-500/50 hover:shadow-[0_0_40px_rgba(16,185,129,0.1)] hover:scale-[1.02] hover:-rotate-y-2 hover:rotate-x-2 transform-style-3d">
+             <Radar3D />
+             <div className="mt-8 text-center relative z-10 translate-transform duration-500 group-hover:translate-z-10">
+               <span className="text-sm font-bold text-emerald-400 uppercase tracking-widest">System Online</span>
+               <p className="text-xs text-neutral-500 mt-1 font-mono">Monitoring Threat Vectors...</p>
+             </div>
+          </div>
+
           {/* Score Card */}
-          <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors" />
-            <Activity className="text-emerald-500 mb-4" size={40} />
-            <span className="text-5xl font-black text-neutral-100">{initialScore}</span>
-            <span className="text-neutral-400 mt-2 font-medium tracking-wide uppercase text-sm">Awareness Score</span>
+          <div className="group bg-neutral-900/80 backdrop-blur border border-neutral-800 p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all duration-700 hover:border-blue-500/50 hover:shadow-[0_0_40px_rgba(59,130,246,0.1)] hover:scale-[1.02] hover:rotate-y-2 hover:-rotate-x-2 transform-style-3d">
+            <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors" />
+            <Activity className="text-blue-500 mb-4 transition-transform duration-500 group-hover:scale-125 group-hover:drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" size={40} />
+            <span className="text-6xl font-black text-neutral-100 transition-transform duration-500 group-hover:translate-z-12">{initialScore}</span>
+            <span className="text-neutral-400 mt-3 font-bold tracking-widest uppercase text-sm">Awareness Score</span>
           </div>
 
           {/* Breakdown Chart */}
-          <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-xl md:col-span-2 flex flex-col sm:flex-row items-center">
-            <div className="flex-1 w-full" style={{ minWidth: 0, minHeight: 192 }}>
-              <ResponsiveContainer width="100%" height={192}>
+          <div className="group bg-neutral-900/80 backdrop-blur border border-neutral-800 p-6 rounded-2xl flex flex-col items-center justify-center relative transition-all duration-700 hover:border-purple-500/50 hover:shadow-[0_0_40px_rgba(168,85,247,0.1)] hover:scale-[1.02] hover:-rotate-y-2 hover:-rotate-x-2 transform-style-3d">
+            <div className="w-full h-40">
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={data}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={50}
+                    outerRadius={70}
                     paddingAngle={5}
                     dataKey="value"
                     stroke="none"
@@ -203,33 +274,30 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', color: '#f5f5f5' }}
-                    itemStyle={{ color: '#f5f5f5' }}
+                    contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', color: '#f5f5f5', borderRadius: '8px' }}
+                    itemStyle={{ color: '#f5f5f5', fontWeight: 'bold' }}
                   />
-                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex-1 text-center sm:text-left px-4">
-               <h3 className="text-xl font-bold text-neutral-200 mb-2">Threat Encounter Breakdown</h3>
-               <p className="text-neutral-400 text-sm">
-                 The chart visualizes the distribution of threats you have successfully analyzed. Keep analyzing suspicious links and emails to keep this updated.
-               </p>
+            <div className="text-center mt-2 transition-transform duration-500 group-hover:translate-z-10">
+               <h3 className="text-sm font-bold text-neutral-200 tracking-wider uppercase">Encounter Spread</h3>
             </div>
           </div>
         </div>
 
         {/* History Table */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden mt-8">
-          <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
-            <h3 className="font-semibold text-neutral-200">Recent Analysis History</h3>
+        <div className="bg-neutral-900/80 backdrop-blur border border-neutral-800 rounded-2xl overflow-hidden mt-8 shadow-xl">
+          <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-950 flex items-center gap-3">
+             <ShieldAlert size={18} className="text-neutral-400" />
+            <h3 className="font-bold text-neutral-200 tracking-wide uppercase text-sm">Incident Telemetry Log</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-neutral-800 text-neutral-400 bg-neutral-900/30 text-sm h-12">
-                  <th className="px-6 font-medium">Date</th>
-                  <th className="px-6 font-medium">Type</th>
+                <tr className="border-b border-neutral-800 text-neutral-500 bg-neutral-900/30 text-xs font-mono h-12 uppercase tracking-widest">
+                  <th className="px-6 font-medium">Timestamp</th>
+                  <th className="px-6 font-medium">Vector</th>
                   <th className="px-6 font-medium">Classification</th>
                   <th className="px-6 font-medium">Severity</th>
                 </tr>
@@ -237,34 +305,34 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
               <tbody className="text-sm">
                 {initialHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-neutral-500">
-                      You haven't analyzed any threats yet. Try the Threat Analyzer!
+                    <td colSpan={4} className="px-6 py-12 text-center text-neutral-500 font-mono">
+                       {"> NO TELEMETRY DATA ACQUIRED <"}
                     </td>
                   </tr>
                 ) : (
                   initialHistory.map((item) => (
-                    <tr key={item.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/20 transition-colors">
-                      <td className="px-6 py-4 text-neutral-300">
-                        {new Date(item.created_at).toISOString().split('T')[0]}
+                    <tr key={item.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/40 transition-colors">
+                      <td className="px-6 py-4 text-neutral-400 font-mono text-xs">
+                        {new Date(item.created_at).toISOString().split('T')[0]} <span className="text-neutral-600">{new Date(item.created_at).toISOString().split('T')[1].split('.')[0]}</span>
                       </td>
-                      <td className="px-6 py-4 text-neutral-300 capitalize">
+                      <td className="px-6 py-4 text-neutral-300 font-bold uppercase text-xs tracking-wider">
                         {item.type}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${
-                          item.classification === 'Safe' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 
-                          item.classification === 'Phishing' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                          item.classification === 'Social Engineering' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                          'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                        <span className={`px-3 py-1 rounded border text-xs font-bold uppercase tracking-wider ${
+                          item.classification === 'Safe' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 
+                          item.classification === 'Phishing' ? 'bg-red-500/10 text-red-500 border-red-500/30' :
+                          item.classification === 'Social Engineering' ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' :
+                          'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
                         }`}>
                           {item.classification}
                         </span>
                       </td>
-                      <td className="px-6 py-4 capitalize">
-                        <span className={`font-bold ${
-                          item.severity === 'High' ? 'text-red-400' :
-                          item.severity === 'Medium' ? 'text-yellow-400' :
-                          'text-emerald-400'
+                      <td className="px-6 py-4">
+                        <span className={`font-black uppercase text-xs tracking-widest ${
+                          item.severity === 'High' ? 'text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' :
+                          item.severity === 'Medium' ? 'text-yellow-500' :
+                          'text-emerald-500'
                         }`}>
                           {item.severity}
                         </span>
