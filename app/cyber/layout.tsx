@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShieldAlert, BarChart3, MailWarning, Download, LogOut, User, Database, KeyRound } from "lucide-react";
+import { ShieldAlert, BarChart3, MailWarning, Download, LogOut, User, Database, KeyRound, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function CyberLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>("Trainee");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Load cached user data from local storage if available
@@ -41,12 +42,28 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex h-screen bg-neutral-950 text-neutral-50 overflow-hidden">
+    <div className="flex h-screen bg-neutral-950 text-neutral-50 overflow-hidden relative">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 border-r border-neutral-800 bg-neutral-900 flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-neutral-800">
-          <ShieldAlert className="text-emerald-500 mr-3" />
-          <h1 className="text-lg font-bold tracking-wider text-emerald-400">CyberAware</h1>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-neutral-800 bg-neutral-900 flex flex-col transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-800 shrink-0">
+          <div className="flex items-center">
+            <ShieldAlert className="text-emerald-500 mr-3" />
+            <h1 className="text-lg font-bold tracking-wider text-emerald-400">CyberAware</h1>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden text-neutral-400 hover:text-white"
+          >
+            <X size={20} />
+          </button>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navItems.map((item) => {
@@ -55,6 +72,7 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
                     ? "bg-emerald-500/10 text-emerald-400"
@@ -93,13 +111,19 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 border-b border-neutral-800 flex items-center justify-between px-8 bg-neutral-900/50 backdrop-blur">
-          <h2 className="text-xl font-semibold capitalize">
+      <div className="flex-1 flex flex-col overflow-hidden w-full min-w-0">
+        <header className="h-16 border-b border-neutral-800 flex items-center px-4 md:px-8 bg-neutral-900/50 backdrop-blur shrink-0">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden mr-4 text-neutral-400 hover:text-white"
+          >
+            <Menu size={24} />
+          </button>
+          <h2 className="text-lg md:text-xl font-semibold capitalize truncate">
             {navItems.find((i) => i.href === pathname)?.name || "CyberAwareness"}
           </h2>
         </header>
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
       </div>
     </div>
   );

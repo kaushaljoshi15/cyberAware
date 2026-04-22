@@ -72,6 +72,7 @@ export async function POST(req: Request) {
           isMalicious = content.match(/^[0-9a-c]/i) !== null || Boolean(filename && (filename.toLowerCase().includes("eicar") || filename.toLowerCase().includes("malware")));
           explanation = "Simulated Fallback. Please add VIRUSTOTAL_API_KEY to .env to use the real API.";
         } else {
+          console.log(`[VirusTotal API] Calling API for hash: ${content}`);
           const vtResponse = await fetch(`https://www.virustotal.com/api/v3/files/${content}`, {
             method: "GET",
             headers: { "x-apikey": vtApiKey },
@@ -139,7 +140,7 @@ export async function POST(req: Request) {
     const groq = new Groq({ apiKey });
 
     // Content is already safely bounded by Zod (max 15000)
-    const prompt = `You are a world-class cybersecurity expert. Analyze the following user-submitted ${type}:
+    const prompt = `You are a world-class cybersecurity expert and an elite SOC Analyst. Analyze the following user-submitted ${type}:
     CONTENT: "${content}"
     
     CRITICAL CLASSIFICATION RULES:
@@ -159,6 +160,8 @@ export async function POST(req: Request) {
       "severity": "Low" | "Medium" | "High",
       "confidenceScore": number,
       "iocs": string[],
+      "mitreTactic": "string (e.g., Initial Access, Execution)",
+      "mitreTechniqueId": "string (e.g., T1566)",
       "explanation": "string",
       "recommendations": "string"
     }`;

@@ -274,8 +274,29 @@ export default function CyberDashboardClient({ initialScore, initialHistory }: {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', color: '#f5f5f5', borderRadius: '8px' }}
-                    itemStyle={{ color: '#f5f5f5', fontWeight: 'bold' }}
+                    wrapperStyle={{ zIndex: 1000, outline: 'none' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const d = payload[0].payload;
+                        if (d.name === 'No Data Yet') return null;
+                        const total = initialHistory.length;
+                        const percent = total > 0 ? Math.round((d.value / total) * 100) : 0;
+                        return (
+                          <div className="bg-neutral-950/90 backdrop-blur-md border border-neutral-800 p-3.5 rounded-xl shadow-2xl min-w-[160px]">
+                            <p className="font-black text-sm uppercase tracking-wider" style={{ color: d.color }}>{d.name}</p>
+                            <div className="flex items-end gap-2 mt-1.5">
+                              <span className="text-neutral-100 font-mono text-lg leading-none">{d.value}</span>
+                              <span className="text-neutral-500 text-xs font-medium uppercase tracking-widest leading-none mb-0.5">Hits</span>
+                            </div>
+                            <div className="mt-3 w-full bg-neutral-800/50 rounded-full h-1.5 overflow-hidden">
+                              <div className="h-1.5 rounded-full transition-all duration-500" style={{ width: `${percent}%`, backgroundColor: d.color }}></div>
+                            </div>
+                            <p className="text-right text-xs mt-1.5 text-neutral-400 font-mono font-medium">{percent}% <span className="text-neutral-600 font-sans tracking-wide">RATIO</span></p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>

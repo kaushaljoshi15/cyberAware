@@ -260,45 +260,69 @@ export default function AnalyzerPage() {
                 ) : (
                   <div className="flex flex-col h-full overflow-y-auto">
                     {/* Header */}
-                    <div className={`p-6 border-b flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${
-                      result.classification === 'Safe' ? 'bg-gradient-to-r from-emerald-950/40 to-neutral-900 border-emerald-900/30' : 
-                      result.classification === 'Phishing' ? 'bg-gradient-to-r from-red-950/40 to-neutral-900 border-red-900/30' :
-                      result.classification === 'Malware' ? 'bg-gradient-to-r from-red-950/60 to-neutral-900 border-red-900/50' :
-                      'bg-gradient-to-r from-yellow-950/40 to-neutral-900 border-yellow-900/30'
-                    }`}>
-                      <div className="flex items-center gap-4">
-                        <div className={`p-4 rounded-2xl shadow-inner ${
-                          result.classification === 'Safe' ? 'bg-emerald-500/10 text-emerald-400' : 
-                          result.classification === 'Phishing' || result.classification === 'Malware' ? 'bg-red-500/10 text-red-500' :
-                          'bg-yellow-500/10 text-yellow-500'
-                        }`}>
-                           {result.classification === 'Safe' ? <ShieldCheck size={32} /> : <ShieldAlert size={32} />}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-2xl font-black text-white tracking-tight uppercase">
-                               {result.classification}
-                            </h3>
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${
-                              result.severity === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 
-                              result.severity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 
-                              'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            }`}>
-                              {result.severity} Risk
-                            </span>
+                      <div className={`p-6 border-b flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${
+                        result.classification === 'Safe' ? 'bg-gradient-to-r from-emerald-950/40 to-neutral-900 border-emerald-900/30' : 
+                        result.classification === 'Phishing' ? 'bg-gradient-to-r from-red-950/40 to-neutral-900 border-red-900/30' :
+                        result.classification === 'Malware' ? 'bg-gradient-to-r from-red-950/60 to-neutral-900 border-red-900/50' :
+                        'bg-gradient-to-r from-yellow-950/40 to-neutral-900 border-yellow-900/30'
+                      }`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`p-4 rounded-2xl shadow-inner ${
+                            result.classification === 'Safe' ? 'bg-emerald-500/10 text-emerald-400' : 
+                            result.classification === 'Phishing' || result.classification === 'Malware' ? 'bg-red-500/10 text-red-500' :
+                            'bg-yellow-500/10 text-yellow-500'
+                          }`}>
+                             {result.classification === 'Safe' ? <ShieldCheck size={32} /> : <ShieldAlert size={32} />}
                           </div>
-                          <p className="text-sm mt-1 text-neutral-400 font-medium tracking-wide">Threat Assessment Complete</p>
+                          <div>
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-2xl font-black text-white tracking-tight uppercase">
+                                 {result.classification}
+                              </h3>
+                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${
+                                result.severity === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 
+                                result.severity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 
+                                'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              }`}>
+                                {result.severity} Risk
+                              </span>
+                            </div>
+                            <p className="text-sm mt-1 text-neutral-400 font-medium tracking-wide">Threat Assessment Complete</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+                          {/* MITRE ATT&CK BADGE */}
+                          {result.mitreTechniqueId && result.mitreTactic && result.classification !== 'Safe' && (
+                            <div className="bg-neutral-950/80 border border-neutral-800 rounded-lg p-3 flex-grow md:flex-grow-0 flex items-center justify-between gap-3 group shadow-sm min-w-0">
+                              <div className="flex items-center gap-3 min-w-0">
+                                 <div className="bg-neutral-800 text-neutral-300 font-mono text-xs font-bold px-2 py-1 rounded shrink-0">ATT&CK</div>
+                                 <div className="text-sm font-semibold text-neutral-300 flex flex-col items-start leading-tight min-w-0">
+                                   <span className="truncate w-full">{result.mitreTechniqueId}</span>
+                                   <span className="text-neutral-500 font-normal text-xs truncate w-full max-w-[120px] sm:max-w-[180px]" title={result.mitreTactic}>({result.mitreTactic})</span>
+                                 </div>
+                              </div>
+                              <a 
+                                href={`https://attack.mitre.org/techniques/${result.mitreTechniqueId.split('.')[0]}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-cyan-500 hover:text-cyan-400 transition-colors"
+                                title="View in MITRE Database"
+                              >
+                                <LinkIcon size={16} />
+                              </a>
+                            </div>
+                          )}
+                          
+                          <button 
+                            onClick={copyReport}
+                            className="text-neutral-400 hover:text-white bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 p-2.5 rounded-lg transition-colors flex items-center justify-center min-w-[44px] h-[52px]"
+                            title="Copy Report"
+                          >
+                            {copied ? <CopyCheck size={18} className="text-emerald-400" /> : <Copy size={18} />}
+                          </button>
                         </div>
                       </div>
-                      
-                      <button 
-                        onClick={copyReport}
-                        className="text-neutral-400 hover:text-white bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 p-2.5 rounded-lg transition-colors flex items-center justify-center min-w-[44px]"
-                        title="Copy Report"
-                      >
-                        {copied ? <CopyCheck size={18} className="text-emerald-400" /> : <Copy size={18} />}
-                      </button>
-                    </div>
 
                     {/* Content */}
                     <div className="p-6 space-y-6 flex-grow">

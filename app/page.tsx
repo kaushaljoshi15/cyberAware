@@ -23,10 +23,10 @@ export default function Home() {
               CyberAware
             </span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <Link 
               href="/cyber" 
-              className="text-sm font-bold bg-white text-neutral-950 px-6 py-2.5 rounded-full hover:bg-emerald-400 hover:text-neutral-950 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 duration-200"
+              className="text-xs md:text-sm font-bold bg-white text-neutral-950 px-4 py-2 md:px-6 md:py-2.5 rounded-full hover:bg-emerald-400 hover:text-neutral-950 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 duration-200 whitespace-nowrap"
             >
               Launch Platform
             </Link>
@@ -35,28 +35,28 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="w-full max-w-6xl px-6 pt-48 pb-20 flex flex-col items-center text-center z-10">
+      <main className="w-full max-w-6xl px-4 md:px-6 pt-32 md:pt-48 pb-20 flex flex-col items-center text-center z-10">
         
         {/* Status Badge */}
-        <div className="group inline-flex items-center gap-3 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-widest uppercase mb-8 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all cursor-default shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-          <span className="relative flex h-2 w-2">
+        <div className="group inline-flex items-center text-left md:text-center gap-2 md:gap-3 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] md:text-xs font-bold tracking-widest uppercase mb-8 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all cursor-default shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+          <span className="relative flex h-2 w-2 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           Next-Gen Threat Intelligence Active
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-[1.1] max-w-4xl">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 md:mb-8 leading-[1.1] max-w-4xl px-2">
           <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-neutral-200 to-neutral-500">
             Detect threats.
           </span>
-          <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+          <br className="hidden sm:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500 ml-0 sm:ml-2">
             Educate users. Strengthen defences.
           </span>
         </h1>
         
-        <p className="text-lg text-neutral-400 max-w-2xl mb-12 leading-relaxed font-medium">
+        <p className="text-base md:text-lg text-neutral-400 max-w-2xl mb-10 md:mb-12 leading-relaxed font-medium px-2">
           An intelligent, AI-driven platform that classifies malicious URLs, emails, and messages in real time. Gain actionable insights, track your awareness score, and simulate sophisticated phishing attacks.
         </p>
         
