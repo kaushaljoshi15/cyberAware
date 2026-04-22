@@ -75,3 +75,17 @@ model CommunityMessage {
 
   @@map("community_messages")
 }
+
+model EndpointAlert {
+  id             String    @id @default(cuid())
+  hostname       String    @db.VarChar(255)
+  filepath       String    @db.VarChar(512)
+  filehash       String    @db.VarChar(255)
+  classification String    @db.VarChar(100)
+  severity       String    @db.VarChar(50)
+  status         String    @default("PENDING") @db.VarChar(50) // PENDING, DELETE_ORDERED, DELETED, IGNORED
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @updatedAt @db.Timestamp(6)
+
+  @@map("endpoint_alerts")
+}

@@ -130,7 +130,7 @@ export default function AnalyzerPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input section */}
-        <div className="bg-neutral-900/80 backdrop-blur-sm border border-neutral-800/80 rounded-2xl p-6 shadow-2xl flex flex-col h-full">
+        <div className="bg-neutral-900/60 backdrop-blur-md border border-neutral-800/80 rounded-2xl p-6 shadow-2xl flex flex-col h-full">
           <div className="flex bg-neutral-950/50 rounded-xl p-1.5 mb-6 border border-neutral-800 flex-shrink-0 gap-1 overflow-x-auto">
             <button
               onClick={() => { setInputType("url"); setContent(""); setResult(null); }}
@@ -229,7 +229,7 @@ export default function AnalyzerPage() {
         {/* Results Section */}
         <div className="h-full flex flex-col">
            {isAnalyzing && !result ? (
-              <div className="bg-neutral-900/50 border border-neutral-800/80 rounded-2xl p-8 flex flex-col items-center justify-center h-full space-y-6 text-center backdrop-blur-sm shadow-xl">
+              <div className="bg-neutral-900/60 backdrop-blur-md border border-neutral-800/80 rounded-2xl p-8 flex flex-col items-center justify-center h-full space-y-6 text-center shadow-xl">
                  <div className="relative">
                    <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full animate-pulse"></div>
                    <ShieldAlert size={48} className="text-emerald-400 animate-bounce relative z-10" />
@@ -251,7 +251,7 @@ export default function AnalyzerPage() {
                  </div>
               </div>
            ) : result ? (
-             <div className="bg-neutral-900/80 border border-neutral-800/80 rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-500 h-full">
+             <div className="bg-neutral-900/60 backdrop-blur-md border border-neutral-800/80 rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-500 h-full">
                 {result.error ? (
                   <div className="p-6 text-red-400 flex flex-col items-center gap-3 h-full justify-center bg-red-950/20">
                     <AlertTriangle size={36} /> 
@@ -385,7 +385,7 @@ export default function AnalyzerPage() {
                 )}
              </div>
            ) : (
-             <div className="h-full bg-neutral-900/30 border border-neutral-800/50 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center text-neutral-500 relative overflow-hidden group shadow-inner">
+             <div className="h-full bg-neutral-900/40 backdrop-blur-sm border border-neutral-800/50 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center text-neutral-500 relative overflow-hidden group shadow-inner">
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_10%,transparent_100%)] opacity-20"></div>
                 <div className="p-6 bg-neutral-900/50 rounded-full mb-6 border border-neutral-800/50 group-hover:scale-110 transition-transform duration-500 relative z-10 shadow-lg">
                   <ShieldAlert size={48} className="opacity-40" />

@@ -3,7 +3,7 @@ import { ShieldAlert, Activity, Server, Zap } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-hidden relative font-sans flex flex-col items-center">
+    <div className="min-h-screen bg-transparent text-neutral-50 overflow-hidden relative font-sans flex flex-col items-center">
       
       {/* Ambient background glow */}
       <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] -z-10 pointer-events-none mix-blend-screen" />
@@ -16,11 +16,12 @@ export default function Home() {
       <nav className="fixed top-6 z-50 w-full max-w-6xl px-6">
         <div className="mx-auto flex h-16 items-center justify-between rounded-2xl border border-neutral-800/80 bg-neutral-900/60 px-6 backdrop-blur-xl shadow-2xl">
           <div className="flex items-center gap-3 cursor-pointer group">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-105 transition-all">
-              <ShieldAlert size={18} />
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-neutral-950 border border-neutral-800 shadow-[0_0_15px_rgba(16,185,129,0.2)] group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all overflow-hidden shrink-0">
+               <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20" />
+               <ShieldAlert size={18} className="text-emerald-400 relative z-10" />
             </div>
-            <span className="font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 uppercase text-sm">
-              CyberAware
+            <span className="font-black tracking-[0.2em] text-white uppercase text-sm md:text-base flex items-center mt-0.5">
+              CYBER<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">AWARE</span>
             </span>
           </div>
           <div className="flex items-center gap-4 md:gap-6">
@@ -123,11 +124,14 @@ export default function Home() {
       
       <footer className="w-full border-t border-neutral-900 bg-neutral-950 py-12 mt-auto z-10 relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-neutral-950 shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                <ShieldAlert size={16} />
+          <div className="flex items-center gap-3 group cursor-default">
+              <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-neutral-950 border border-neutral-800 shadow-[0_0_10px_rgba(16,185,129,0.2)] overflow-hidden shrink-0">
+                 <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20" />
+                 <ShieldAlert size={16} className="text-emerald-400 relative z-10" />
               </div>
-              <span className="font-bold tracking-widest text-emerald-400 uppercase text-sm">CyberAware</span>
+              <span className="font-black tracking-[0.15em] text-white uppercase text-sm mt-0.5">
+                CYBER<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">AWARE</span>
+              </span>
           </div>
           <p className="text-neutral-500 text-xs font-semibold uppercase tracking-wider">
             © {new Date().getFullYear()} Modern Cybersecurity Education.

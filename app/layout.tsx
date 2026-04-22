@@ -12,6 +12,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import MatrixRain from "@/components/MatrixRain";
+
 export const metadata: Metadata = {
   title: "CyberAware | AI Cybersecurity",
   description: "AI-Based Cybersecurity Awareness Solution",
@@ -25,8 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative bg-neutral-950 text-neutral-50`}
       >
+        <MatrixRain />
         {children}
       </body>
     </html>

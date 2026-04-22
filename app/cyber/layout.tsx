@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShieldAlert, BarChart3, MailWarning, Download, LogOut, User, Database, KeyRound, Menu, X } from "lucide-react";
+import { ShieldAlert, BarChart3, MailWarning, Download, LogOut, User, Database, KeyRound, Menu, X, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function CyberLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>("Trainee");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Load cached user data from local storage if available
@@ -35,6 +35,7 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: "Dashboard", href: "/cyber", icon: BarChart3 },
+    { name: "EDR Command Center", href: "/cyber/endpoint", icon: ShieldCheck },
     { name: "Threat Analyzer", href: "/cyber/analyzer", icon: ShieldAlert },
     { name: "Phishing Simulation", href: "/cyber/simulation", icon: MailWarning },
     { name: "Threat Database", href: "/cyber/database", icon: Database },
@@ -42,25 +43,30 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex h-screen bg-neutral-950 text-neutral-50 overflow-hidden relative">
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
+    <div className="flex h-screen bg-transparent text-neutral-50 overflow-hidden relative">
+      {/* Sidebar Overlay */}
+      {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-neutral-800 bg-neutral-900 flex flex-col transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-neutral-800 bg-neutral-900 flex flex-col transform transition-transform duration-300 ease-in-out shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-800 shrink-0">
-          <div className="flex items-center">
-            <ShieldAlert className="text-emerald-500 mr-3" />
-            <h1 className="text-lg font-bold tracking-wider text-emerald-400">CyberAware</h1>
+          <div className="flex items-center gap-3 group cursor-default">
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-neutral-950 border border-neutral-800 shadow-[0_0_10px_rgba(16,185,129,0.2)] overflow-hidden shrink-0">
+               <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20" />
+               <ShieldAlert size={16} className="text-emerald-400 relative z-10 group-hover:scale-110 transition-transform" />
+            </div>
+            <span className="font-black tracking-[0.15em] text-white uppercase text-sm mt-0.5">
+              CYBER<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">AWARE</span>
+            </span>
           </div>
           <button 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden text-neutral-400 hover:text-white"
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-neutral-400 hover:text-white transition-colors"
           >
             <X size={20} />
           </button>
@@ -72,7 +78,7 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
                     ? "bg-emerald-500/10 text-emerald-400"
@@ -114,8 +120,8 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
       <div className="flex-1 flex flex-col overflow-hidden w-full min-w-0">
         <header className="h-16 border-b border-neutral-800 flex items-center px-4 md:px-8 bg-neutral-900/50 backdrop-blur shrink-0">
           <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden mr-4 text-neutral-400 hover:text-white"
+            onClick={() => setIsSidebarOpen(true)}
+            className="mr-4 text-neutral-400 hover:text-white transition-colors"
           >
             <Menu size={24} />
           </button>
